@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <meta name="theme-color" content="#f3f8f5">
+  <meta name="description" content="IB FOH SA TAB 입고 안내 일일 카운트. 센터와 본인 이름을 고른 뒤 수락·거절·재연락·부재중만 탭합니다.">
+  <title>TAB 안내 카운트</title>
+  <style>
+    :root {
+      --bg: #f3f8f5;
+      --ink: #2a3d34;
+      --muted: #5a7a6a;
+      --line: #d7eadf;
+      --card: #fff;
+      --accent: #2f7a5a;
+      --accent-2: #6aa88a;
+      --chip-cols: 4;
+      --radius: 8px;
+      --grad: linear-gradient(180deg, #8fbfa8 0%, #5a9a7a 100%);
+      --grad-bg: #eef6f1;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; }
+    body {
+      font: 15px/1.45 "Malgun Gothic", "맑은 고딕", "Segoe UI", sans-serif;
+      color: var(--ink);
+      background: var(--bg);
+      min-height: 100dvh;
+      padding: 12px 12px calc(16px + env(safe-area-inset-bottom));
+    }
+    .app { max-width: 42rem; margin: 0 auto; }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid var(--accent-2);
+      margin-bottom: 12px;
+    }
+    .kicker {
+      margin: 0 0 2px;
+      font-size: 0.72rem;
+      letter-spacing: 0.04em;
+      color: var(--muted);
+    }
+    h1 {
+      margin: 0;
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--accent);
+    }
+    .ver {
+      flex: 0 0 auto;
+      font-size: 0.72rem;
+      color: var(--muted);
+      padding-top: 2px;
+    }
+    .kpi {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .kpi > div {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 10px 12px;
+    }
+    .kpi b {
+      display: block;
+      font-size: 1.45rem;
+      line-height: 1.1;
+      color: var(--accent);
+    }
+    .kpi span { font-size: 0.75rem; color: var(--muted); }
+    .last-tap {
+      margin: 0 0 10px;
+      padding: 8px 12px;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      font-size: 0.88rem;
+    }
+    .last-tap b { color: var(--accent); }
+    .self-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .self-row .hint { margin: 0; }
+    .self-row .btn {
+      height: 2rem;
+      padding: 0 10px;
+      font-size: 0.78rem;
+    }
+    .ar-chip-filter-group {
+      margin-bottom: 10px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #eef6f1;
+      overflow: hidden;
+    }
+    .ar-chip-filter-wrap {
+      display: grid;
+      grid-template-columns: 1.35rem minmax(0, 1fr);
+      align-items: start;
+      gap: 0.35rem;
+      padding: 0.45rem 0.55rem 0.5rem;
+    }
+    .ar-chip-filter-wrap + .ar-chip-filter-wrap { padding-top: 0; }
+    .ar-chip-filter-row-label {
+      font-size: 0.68rem;
+      font-weight: 500;
+      color: var(--muted);
+      padding-top: 0.55rem;
+    }
+    .ar-chip-filter-icons {
+      display: grid;
+      grid-template-columns: repeat(var(--chip-cols), minmax(0, 1fr));
+      gap: 0.35rem;
+    }
+    .ar-sa-count-chip {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.08rem;
+      height: 2.35rem;
+      padding: 0.2rem 0.15rem;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff;
+      cursor: pointer;
+      font-family: inherit;
+      color: var(--ink);
+      touch-action: manipulation;
+    }
+    .ar-sa-count-chip:hover { background: #f4f4f4; }
+    .ar-sa-count-chip.active {
+      background: #f4f4f4;
+      box-shadow: inset 0 0 0 1px var(--accent);
+    }
+    .ar-sa-count-chip.locked-out {
+      opacity: 0.38;
+      cursor: not-allowed;
+    }
+    .ar-sa-count-chip .ui-icon { width: 14px; height: 14px; display: block; }
+    .ar-sa-count-chip .ar-sa-count-lbl {
+      font-size: 0.6rem;
+      color: inherit;
+      font-weight: 500;
+      line-height: 1.1;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .ar-sa-count-chip .center-filter-count {
+      position: absolute;
+      top: 0.12rem;
+      right: 0.18rem;
+      font-size: 0.58rem;
+      font-weight: 700;
+      color: inherit;
+      line-height: 1;
+    }
+    .name-gate { text-align: center; margin-bottom: 10px; }
+    .name-gate.gate-open { padding: 2.2rem 0 1.2rem; }
+    .name-gate h2 {
+      margin: 0 0 6px;
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+    .name-gate .gate-lead {
+      margin: 0 0 12px;
+      font-size: 0.88rem;
+      color: var(--ink);
+    }
+    .name-gate:not(.gate-open) h2,
+    .name-gate:not(.gate-open) .gate-lead { display: none; }
+    .ar-chip-filter-group.gate-open .ar-sa-count-chip { height: 3.6rem; }
+    .ar-chip-filter-group.gate-open .ar-sa-count-chip .ui-icon {
+      width: 18px;
+      height: 18px;
+    }
+    .ar-chip-filter-group.gate-open .ar-sa-count-chip .ar-sa-count-lbl {
+      font-size: 0.78rem;
+    }
+    .self-banner {
+      margin: 0 0 10px;
+      padding: 8px 12px;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      font-weight: 700;
+      color: var(--accent);
+    }
+    .tap-pad {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 0.5rem;
+      margin-bottom: 10px;
+      padding: 0.85rem;
+      background: var(--grad-bg);
+      border-radius: 1.25rem;
+    }
+    .tap-btn {
+      position: relative;
+      height: 4.75rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.2rem;
+      border: 0;
+      border-radius: 1.15rem;
+      background: var(--grad);
+      font-family: inherit;
+      cursor: pointer;
+      touch-action: manipulation;
+      color: #fff;
+      min-width: 0;
+    }
+    .tap-btn .ui-icon {
+      width: 22px;
+      height: 22px;
+      stroke: #fff;
+      color: #fff;
+    }
+    .tap-btn .tap-lbl {
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0;
+      color: #fff;
+    }
+    .tap-btn .tap-n {
+      position: absolute;
+      top: 0.32rem;
+      right: 0.4rem;
+      font-size: 0.68rem;
+      font-weight: 700;
+      line-height: 1;
+      color: #fff;
+    }
+    .tap-btn:active { filter: brightness(0.94); }
+    .tap-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .actions button, .btn {
+      height: 3.15rem;
+      border: 0;
+      border-radius: 1.5rem;
+      background: var(--grad);
+      color: #fff;
+      font: inherit;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+    .actions button.ghost, .btn.ghost {
+      background: var(--card);
+      color: var(--accent);
+      border: 1px solid var(--line);
+    }
+    .actions button:disabled, .btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+    .hint {
+      margin: 0 0 8px;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+    .copy-preview {
+      margin: 0 0 12px;
+      padding: 8px 10px;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      font-family: Consolas, "Courier New", "Malgun Gothic", monospace;
+      font-size: 0.82rem;
+      word-break: break-all;
+    }
+    .flash { outline: 2px solid var(--accent); }
+    footer {
+      margin-top: 16px;
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+    .empty-staff {
+      grid-column: 1 / -1;
+      margin: 0;
+      padding: 0.55rem 0.2rem;
+      font-size: 0.72rem;
+      color: var(--muted);
+      text-align: center;
+    }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div>
+        <p class="kicker">IB · FOH SA · 카운트 전용</p>
+        <h1>TAB 안내 카운트</h1>
+      </div>
+      <div class="ver" id="appVer"></div>
+    </header>
+
+    <section id="countPanel">
+      <div class="name-gate gate-open" id="nameGate">
+        <h2 id="gateTitle">센터와 본인 이름을 선택하세요</h2>
+        <p class="gate-lead" id="gateLead">센터를 고른 뒤 본인 이름만 카운트됩니다. 오늘은 당일로만 기록됩니다.</p>
+        <div class="ar-chip-filter-group gate-open" id="saChipGroup">
+          <div class="ar-chip-filter-wrap">
+            <div class="ar-chip-filter-row-label">센터</div>
+            <div class="ar-chip-filter-icons" id="centerChips"></div>
+          </div>
+          <div class="ar-chip-filter-wrap">
+            <div class="ar-chip-filter-row-label">SA</div>
+            <div class="ar-chip-filter-icons" id="saChips"></div>
+          </div>
+        </div>
+      </div>
+      <div id="countWork" class="hidden">
+        <p class="self-banner" id="selfBanner"></p>
+        <div class="kpi">
+          <div><b id="kpiContact">0</b><span>컨택 총량 (4결과 합)</span></div>
+          <div><b id="kpiGuide">0</b><span>안내 개수 (부재중 제외)</span></div>
+        </div>
+        <p class="last-tap" id="lastTapTime">마지막 카운트 없음</p>
+        <div class="self-row">
+          <p class="hint" id="saHint">본인만 카운트할 수 있습니다.</p>
+          <button type="button" class="btn ghost" id="changeSelf">본인 변경</button>
+        </div>
+        <div class="tap-pad" id="tapPad"></div>
+        <div class="actions">
+          <button type="button" id="copyToday">오늘 숫자 복사</button>
+          <button type="button" class="ghost" id="undoTap">직전 탭 취소</button>
+        </div>
+        <p class="copy-preview" id="copyPreview"></p>
+        <p class="hint" id="countStoreHint">숫자는 이 폰에 저장됩니다. 퇴근 전 「오늘 숫자 복사」를 눌러 Teams에 붙여 넣으세요. 차량번호는 넣지 않습니다.</p>
+      </div>
+    </section>
+
+    <footer>
+      SA는 이 화면에서 카운트만 합니다. 퇴근 전 오늘 숫자 복사를 Teams에 붙여 넣습니다. 차량번호는 넣지 않습니다.
+    </footer>
+  </div>
+  <script>
+    const APP_VERSION = "2026.10.08";
+    const CONFIG = {
+      SCRIPT_URL: "",
+      STAFF_CSV_URL: ""
+    };
+    const STORAGE_KEY = "dongtan_tab_sa_count_v2";
+    const STAFF_POLL_MS = 15000;
+    const DEFAULT_CENTERS = ["용인", "동탄"];
+    const DEFAULT_STAFF = [
+      { center: "용인", name: "이영주", active: 1 },
+      { center: "용인", name: "이현섭", active: 1 },
+      { center: "용인", name: "나정주", active: 1 },
+      { center: "동탄", name: "이한빈", active: 1 },
+      { center: "동탄", name: "이상택", active: 1 },
+      { center: "동탄", name: "박찬병", active: 1 },
+      { center: "동탄", name: "우용건", active: 1 },
+      { center: "동탄", name: "변제철", active: 1 }
+    ];
+    const OUTCOMES = [
+      { id: "accept", label: "수락" },
+      { id: "decline", label: "거절" },
+      { id: "callback", label: "재연락" },
+      { id: "missed", label: "부재중" }
+    ];
+    const ICONS = {
+      center: '<svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 20V9l8-5 8 5v11"/><path d="M9 20v-6h6v6"/></svg>',
+      person: '<svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="8" r="3.2"/><path d="M5.5 19c1.2-3.2 3.5-4.8 6.5-4.8s5.3 1.6 6.5 4.8"/></svg>',
+      accept: '<svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12.5 10 17.5 19 7"/></svg>',
+      decline: '<svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M7 7 17 17M17 7 7 17"/></svg>',
+      callback: '<svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M8 4.5 5 8l3 3.5"/><path d="M5 8h8a6 6 0 1 1-1.2 11.9"/></svg>',
+      missed: '<svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M7 7c2.8 2.8 7.2 2.8 10 0"/><path d="M9.2 17.2 7 19.5M14.8 17.2 17 19.5"/><circle cx="12" cy="12" r="2.2"/></svg>'
+    };
+
+    function emptyCounts() {
+      return { accept: 0, decline: 0, callback: 0, missed: 0 };
+    }
+
+    function todayKey(d) {
+      const x = d || new Date();
+      const y = x.getFullYear();
+      const m = String(x.getMonth() + 1).padStart(2, "0");
+      const day = String(x.getDate()).padStart(2, "0");
+      return y + "-" + m + "-" + day;
+    }
+
+    function parseKey(key) {
+      const p = key.split("-").map(Number);
+      return new Date(p[0], p[1] - 1, p[2]);
+    }
+
+    function padMd(key) {
+      const d = parseKey(key);
+      return String(d.getMonth() + 1).padStart(2, "0") + "/" + String(d.getDate()).padStart(2, "0");
+    }
+
+    function contactOf(c) {
+      return (c.accept || 0) + (c.decline || 0) + (c.callback || 0) + (c.missed || 0);
+    }
+
+    function guideOf(c) {
+      return (c.accept || 0) + (c.decline || 0) + (c.callback || 0);
+    }
+
+    function defaultRoster() {
+      return {
+        centers: DEFAULT_CENTERS.slice(),
+        staff: DEFAULT_STAFF.map(function (s) {
+          return { center: s.center, name: s.name, active: s.active };
+        })
+      };
+    }
+
+    function migrateV1(s) {
+      const next = defaultState();
+      next.selfSa = s.selfSa || "";
+      next.selfCenter = s.selfCenter || (next.selfSa ? "동탄" : "");
+      next.selfLocked = !!(next.selfSa && next.selfCenter);
+      next.lastTap = s.lastTap || null;
+      if (next.lastTap && !next.lastTap.center) next.lastTap.center = "동탄";
+      const rec = s.records || {};
+      Object.keys(rec).forEach(function (dateKey) {
+        const day = rec[dateKey] || {};
+        Object.keys(day).forEach(function (key) {
+          const row = day[key];
+          if (!row || typeof row !== "object") return;
+          if (row.accept != null || row.decline != null) {
+            if (!next.records[dateKey]) next.records[dateKey] = {};
+            if (!next.records[dateKey]["동탄"]) next.records[dateKey]["동탄"] = {};
+            next.records[dateKey]["동탄"][key] = row;
+          }
+        });
+      });
+      return next;
+    }
+
+    function defaultState() {
+      return {
+        version: 2,
+        selfSa: "",
+        selfCenter: "",
+        selfLocked: false,
+        lastTap: null,
+        records: {},
+        roster: defaultRoster()
+      };
+    }
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) {
+          const v1 = localStorage.getItem("dongtan_tab_sa_count_v1");
+          if (v1) return migrateV1(JSON.parse(v1));
+          return defaultState();
+        }
+        const s = JSON.parse(raw);
+        if (!s || !s.records) return defaultState();
+        if (s.version === 1) return migrateV1(s);
+        if (s.version !== 2) return defaultState();
+        if (!s.roster || !s.roster.staff || rosterLooksStale(s.roster)) s.roster = defaultRoster();
+        if (!isActiveStaff(s.selfCenter, s.selfSa, s.roster)) {
+          if (s.lastTap && isActiveStaff(s.lastTap.center, s.lastTap.name, s.roster)) {
+            s.selfCenter = s.lastTap.center;
+            s.selfSa = s.lastTap.name;
+          } else {
+            s.selfSa = "";
+            s.selfCenter = "";
+          }
+        }
+        s.selfLocked = !!(s.selfSa && s.selfCenter);
+        return s;
+      } catch (e) {
+        return defaultState();
+      }
+    }
+
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function rosterLooksStale(roster) {
+      const names = ((roster && roster.staff) || []).map(function (s) { return s.name; });
+      const centers = (roster && roster.centers) || [];
+      if (names.indexOf("이한빈") >= 0 || names.indexOf("이영주") >= 0) return false;
+      if (names.indexOf("한빈") >= 0 || names.indexOf("상택") >= 0) return true;
+      if (centers.indexOf("용인") < 0) return true;
+      return false;
+    }
+
+    function isActiveStaff(center, name, roster) {
+      const list = (roster || state.roster).staff || [];
+      for (let i = 0; i < list.length; i++) {
+        if (list[i].center === center && list[i].name === name && list[i].active !== 0) return true;
+      }
+      return false;
+    }
+
+    function rosterCenters() {
+      const seen = {};
+      const out = [];
+      function add(label) {
+        const c = String(label || "").trim();
+        if (!c || seen[c]) return;
+        seen[c] = true;
+        out.push(c);
+      }
+      DEFAULT_CENTERS.forEach(add);
+      (state.roster.centers || []).forEach(add);
+      (state.roster.staff || []).forEach(function (s) { add(s.center); });
+      return out;
+    }
+
+    function staffForCenter(center) {
+      return (state.roster.staff || []).filter(function (s) {
+        return s.center === center && s.active !== 0;
+      });
+    }
+
+    function dayCenterMap(dateKey, center) {
+      if (!state.records[dateKey]) state.records[dateKey] = {};
+      if (!state.records[dateKey][center]) state.records[dateKey][center] = {};
+      return state.records[dateKey][center];
+    }
+
+    function saRow(dateKey, center, name) {
+      const map = state.records[dateKey] && state.records[dateKey][center];
+      return map ? map[name] : null;
+    }
+
+    function saCounts(dateKey, center, name) {
+      const row = saRow(dateKey, center, name);
+      return row ? {
+        accept: row.accept || 0,
+        decline: row.decline || 0,
+        callback: row.callback || 0,
+        missed: row.missed || 0
+      } : emptyCounts();
+    }
+
+    function saLastAt(dateKey, center, name) {
+      const row = saRow(dateKey, center, name);
+      return row && row.lastAt ? row.lastAt : 0;
+    }
+
+    function saLastField(dateKey, center, name) {
+      const row = saRow(dateKey, center, name);
+      return row && row.lastField ? row.lastField : "";
+    }
+
+    function outcomeLabel(id) {
+      for (let i = 0; i < OUTCOMES.length; i++) {
+        if (OUTCOMES[i].id === id) return OUTCOMES[i].label;
+      }
+      return "";
+    }
+
+    function formatStamp(ms) {
+      if (!ms) return "";
+      const d = new Date(ms);
+      return padMd(todayKey(d)) + " " +
+        String(d.getHours()).padStart(2, "0") + ":" +
+        String(d.getMinutes()).padStart(2, "0");
+    }
+
+    function setSaCounts(dateKey, center, name, counts, lastAt, lastField) {
+      const prev = saRow(dateKey, center, name) || {};
+      const nextAt = lastAt === null ? 0 : (lastAt || prev.lastAt || 0);
+      const nextField = lastAt === null
+        ? ""
+        : (lastField != null && lastField !== "" ? lastField : (prev.lastField || ""));
+      dayCenterMap(dateKey, center)[name] = {
+        accept: Math.max(0, Number(counts.accept) || 0),
+        decline: Math.max(0, Number(counts.decline) || 0),
+        callback: Math.max(0, Number(counts.callback) || 0),
+        missed: Math.max(0, Number(counts.missed) || 0),
+        lastAt: nextAt,
+        lastField: nextAt ? nextField : ""
+      };
+      saveState();
+    }
+
+    function lineFor(dateKey, center, name) {
+      const c = saCounts(dateKey, center, name);
+      return padMd(dateKey) + " " + center + " " + name +
+        " 컨택 " + contactOf(c) + " · 안내 " + guideOf(c) +
+        " (수락" + c.accept + " 거절" + c.decline + " 재연락" + c.callback + " 부재중" + c.missed + ")";
+    }
+
+    function sheetWriteEnabled() {
+      return !!(CONFIG.SCRIPT_URL && CONFIG.SCRIPT_URL.indexOf("http") === 0);
+    }
+
+    function staffReadEnabled() {
+      return !!(CONFIG.STAFF_CSV_URL && CONFIG.STAFF_CSV_URL.indexOf("http") === 0);
+    }
+
+    function splitCsvLine(line) {
+      const out = [];
+      let cur = "";
+      let q = false;
+      for (let i = 0; i < line.length; i++) {
+        const ch = line[i];
+        if (ch === '"') {
+          if (q && line[i + 1] === '"') { cur += '"'; i++; }
+          else q = !q;
+        } else if (ch === "," && !q) {
+          out.push(cur);
+          cur = "";
+        } else cur += ch;
+      }
+      out.push(cur);
+      return out;
+    }
+
+    function parseStaffCsv(text) {
+      const lines = String(text || "").replace(/^\uFEFF/, "").trim().split(/\r?\n/);
+      const staff = [];
+      const centers = DEFAULT_CENTERS.slice();
+      if (lines.length < 2) return { centers: centers, staff: DEFAULT_STAFF.slice() };
+      const headers = splitCsvLine(lines[0]).map(function (h) { return h.trim().toLowerCase(); });
+      function col(row, name) {
+        const i = headers.indexOf(name);
+        return i >= 0 ? row[i] : "";
+      }
+      for (let i = 1; i < lines.length; i++) {
+        if (!lines[i].trim()) continue;
+        const cols = splitCsvLine(lines[i]);
+        const center = String(col(cols, "center") || "").trim();
+        const name = String(col(cols, "name") || "").trim();
+        if (!center || !name) continue;
+        const activeRaw = String(col(cols, "active") || "1").trim();
+        const active = activeRaw === "0" || activeRaw.toLowerCase() === "false" ? 0 : 1;
+        staff.push({ center: center, name: name, active: active });
+        if (centers.indexOf(center) < 0) centers.push(center);
+      }
+      if (!staff.length) return defaultRoster();
+      return { centers: centers, staff: staff };
+    }
+
+    function sheetWrite(action, dateKey, center, sa, field) {
+      if (!sheetWriteEnabled()) return;
+      const join = CONFIG.SCRIPT_URL.indexOf("?") >= 0 ? "&" : "?";
+      const url = CONFIG.SCRIPT_URL + join +
+        "action=" + encodeURIComponent(action) +
+        "&date=" + encodeURIComponent(dateKey) +
+        "&center=" + encodeURIComponent(center) +
+        "&sa=" + encodeURIComponent(sa) +
+        "&field=" + encodeURIComponent(field);
+      fetch(url, { mode: "no-cors", cache: "no-store" }).catch(function () {});
+    }
+
+    function pullStaff() {
+      if (!staffReadEnabled()) return Promise.resolve();
+      return fetch(CONFIG.STAFF_CSV_URL, { cache: "no-store" })
+        .then(function (res) { return res.text(); })
+        .then(function (text) {
+          state.roster = parseStaffCsv(text);
+          if (state.selfLocked && !isActiveStaff(state.selfCenter, state.selfSa)) {
+            state.selfLocked = false;
+            state.selfSa = "";
+            state.selfCenter = "";
+            state.lastTap = null;
+          }
+          saveState();
+          renderCount();
+        })
+        .catch(function () {});
+    }
+
+    function copyText(text, btn) {
+      function ok() {
+        if (!btn) return;
+        const prev = btn.textContent;
+        btn.textContent = "복사됨";
+        setTimeout(function () { btn.textContent = prev; }, 1200);
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        return navigator.clipboard.writeText(text).then(ok).catch(function () {
+          window.prompt("복사할 내용", text);
+        });
+      }
+      window.prompt("복사할 내용", text);
+    }
+
+    let state = loadState();
+    let staffTimer = null;
+
+    const el = {
+      appVer: document.getElementById("appVer"),
+      nameGate: document.getElementById("nameGate"),
+      gateTitle: document.getElementById("gateTitle"),
+      gateLead: document.getElementById("gateLead"),
+      saChipGroup: document.getElementById("saChipGroup"),
+      countWork: document.getElementById("countWork"),
+      selfBanner: document.getElementById("selfBanner"),
+      kpiContact: document.getElementById("kpiContact"),
+      kpiGuide: document.getElementById("kpiGuide"),
+      centerChips: document.getElementById("centerChips"),
+      saChips: document.getElementById("saChips"),
+      saHint: document.getElementById("saHint"),
+      lastTapTime: document.getElementById("lastTapTime"),
+      changeSelf: document.getElementById("changeSelf"),
+      tapPad: document.getElementById("tapPad"),
+      copyToday: document.getElementById("copyToday"),
+      undoTap: document.getElementById("undoTap"),
+      copyPreview: document.getElementById("copyPreview"),
+      countStoreHint: document.getElementById("countStoreHint")
+    };
+
+    el.appVer.textContent = APP_VERSION;
+
+    function countDateKey() { return todayKey(); }
+
+    function renderCenterChips() {
+      const centers = rosterCenters();
+      const picked = state.selfCenter;
+      el.centerChips.innerHTML = centers.map(function (center) {
+        const on = picked === center ? " active" : "";
+        const locked = state.selfLocked && picked !== center ? " locked-out" : "";
+        return '<button type="button" class="ar-sa-count-chip' + on + locked + '" data-center="' + center + '" data-icon-size="14">' +
+          ICONS.center +
+          '<span class="ar-sa-count-lbl">' + center + "</span></button>";
+      }).join("");
+    }
+
+    function renderSaChips() {
+      const dateKey = countDateKey();
+      const center = state.selfCenter;
+      const self = state.selfSa;
+      if (!center) {
+        el.saChips.innerHTML = '<p class="empty-staff">센터를 먼저 선택하세요</p>';
+        return;
+      }
+      const list = staffForCenter(center);
+      if (!list.length) {
+        el.saChips.innerHTML = '<p class="empty-staff">이 센터 명단이 없습니다. 관리 화면에서 추가하세요</p>';
+        return;
+      }
+      el.saChips.innerHTML = list.map(function (s) {
+        const n = state.selfLocked && self === s.name ? contactOf(saCounts(dateKey, center, s.name)) : 0;
+        const on = self === s.name ? " active" : "";
+        const locked = state.selfLocked && self !== s.name ? " locked-out" : "";
+        const badge = state.selfLocked ? '<span class="center-filter-count">' + n + "</span>" : "";
+        return '<button type="button" class="ar-sa-count-chip' + on + locked + '" data-sa="' + s.name + '" data-icon-size="14">' +
+          ICONS.person +
+          '<span class="ar-sa-count-lbl">' + s.name + "</span>" +
+          badge + "</button>";
+      }).join("");
+    }
+
+    function renderTapPad() {
+      const dateKey = countDateKey();
+      const name = state.selfSa;
+      const center = state.selfCenter;
+      const c = name && center ? saCounts(dateKey, center, name) : emptyCounts();
+      el.tapPad.innerHTML = OUTCOMES.map(function (o) {
+        return '<button type="button" class="tap-btn" data-id="' + o.id + '"' +
+          (name ? "" : " disabled") + ' aria-label="' + o.label + '">' +
+          ICONS[o.id] +
+          '<span class="tap-lbl">' + o.label + "</span>" +
+          '<span class="tap-n">' + (name ? c[o.id] : 0) + "</span></button>";
+      }).join("");
+    }
+
+    function renderCountKpi() {
+      const dateKey = countDateKey();
+      const name = state.selfSa;
+      const center = state.selfCenter;
+      const c = name && center ? saCounts(dateKey, center, name) : emptyCounts();
+      el.kpiContact.textContent = contactOf(c);
+      el.kpiGuide.textContent = guideOf(c);
+      el.copyPreview.textContent = name && center ? lineFor(dateKey, center, name) : "";
+      let lastAt = 0;
+      let lastField = "";
+      if (name && center) {
+        if (state.lastTap && state.lastTap.name === name && state.lastTap.center === center) {
+          lastAt = state.lastTap.at || 0;
+          lastField = state.lastTap.field || "";
+        } else {
+          lastAt = saLastAt(dateKey, center, name);
+          lastField = saLastField(dateKey, center, name);
+        }
+      }
+      const lastLabel = outcomeLabel(lastField);
+      if (lastAt && lastLabel) {
+        el.lastTapTime.innerHTML = "마지막 카운트 <b>" + lastLabel + "</b> · " + formatStamp(lastAt);
+      } else if (lastAt) {
+        el.lastTapTime.innerHTML = "마지막 카운트 <b>" + formatStamp(lastAt) + "</b>";
+      } else {
+        el.lastTapTime.innerHTML = "마지막 카운트 없음";
+      }
+      el.undoTap.disabled = !(state.lastTap && state.lastTap.name === name && state.lastTap.center === center);
+      el.saHint.textContent = "본인 " + name + " · " + center + " · 다른 사람 카운트 불가";
+      el.selfBanner.textContent = "본인 " + name + " · " + center + " · 오늘 " + padMd(dateKey);
+    }
+
+    function renderCount() {
+      const gated = !state.selfLocked;
+      el.nameGate.classList.toggle("gate-open", gated);
+      el.saChipGroup.classList.toggle("gate-open", gated);
+      el.countWork.classList.toggle("hidden", gated);
+      if (gated) {
+        el.gateTitle.textContent = state.selfCenter
+          ? "본인 이름을 선택하세요"
+          : "센터와 본인 이름을 선택하세요";
+        el.gateLead.textContent = state.selfCenter
+          ? state.selfCenter + "에서 본인 이름만 고르세요. 오늘은 당일로만 기록됩니다."
+          : "센터를 고른 뒤 본인 이름만 카운트됩니다. 오늘은 당일로만 기록됩니다.";
+      }
+      renderCenterChips();
+      renderSaChips();
+      if (!gated) {
+        renderTapPad();
+        renderCountKpi();
+      }
+    }
+
+    el.centerChips.addEventListener("click", function (e) {
+      const btn = e.target.closest("[data-center]");
+      if (!btn) return;
+      const center = btn.getAttribute("data-center");
+      if (state.selfLocked) {
+        if (center !== state.selfCenter) {
+          el.centerChips.classList.add("flash");
+          setTimeout(function () { el.centerChips.classList.remove("flash"); }, 600);
+        }
+        return;
+      }
+      state.selfCenter = center;
+      state.selfSa = "";
+      saveState();
+      renderCount();
+    });
+
+    el.saChips.addEventListener("click", function (e) {
+      const btn = e.target.closest("[data-sa]");
+      if (!btn) return;
+      if (!state.selfCenter) {
+        el.centerChips.classList.add("flash");
+        setTimeout(function () { el.centerChips.classList.remove("flash"); }, 600);
+        return;
+      }
+      const name = btn.getAttribute("data-sa");
+      if (state.selfLocked) {
+        if (name !== state.selfSa) {
+          el.saHint.textContent = "본인(" + state.selfSa + ")만 카운트할 수 있습니다.";
+          el.saChips.classList.add("flash");
+          setTimeout(function () { el.saChips.classList.remove("flash"); }, 600);
+        }
+        return;
+      }
+      state.selfSa = name;
+      state.selfLocked = true;
+      saveState();
+      renderCount();
+    });
+
+    el.changeSelf.addEventListener("click", function () {
+      if (!window.confirm("본인을 다시 고를까요? 카운트는 본인 숫자만 올릴 수 있습니다.")) return;
+      state.selfLocked = false;
+      state.selfSa = "";
+      state.selfCenter = "";
+      state.lastTap = null;
+      saveState();
+      renderCount();
+    });
+
+    el.tapPad.addEventListener("click", function (e) {
+      const btn = e.target.closest(".tap-btn");
+      if (!btn || btn.disabled) return;
+      const name = state.selfSa;
+      const center = state.selfCenter;
+      if (!name || !center) {
+        el.saChipGroup.classList.add("flash");
+        setTimeout(function () { el.saChipGroup.classList.remove("flash"); }, 600);
+        return;
+      }
+      const field = btn.getAttribute("data-id");
+      const dateKey = countDateKey();
+      const at = Date.now();
+      const c = saCounts(dateKey, center, name);
+      c[field] += 1;
+      setSaCounts(dateKey, center, name, c, at, field);
+      state.lastTap = { dateKey: dateKey, center: center, name: name, field: field, at: at };
+      saveState();
+      sheetWrite("inc", dateKey, center, name, field);
+      renderCount();
+    });
+
+    el.undoTap.addEventListener("click", function () {
+      const t = state.lastTap;
+      if (!t || t.name !== state.selfSa || t.center !== state.selfCenter) return;
+      const c = saCounts(t.dateKey, t.center, t.name);
+      if (c[t.field] > 0) c[t.field] -= 1;
+      setSaCounts(t.dateKey, t.center, t.name, c, contactOf(c) ? t.at : null);
+      state.lastTap = null;
+      saveState();
+      sheetWrite("undo", t.dateKey, t.center, t.name, t.field);
+      renderCount();
+    });
+
+    el.copyToday.addEventListener("click", function () {
+      const name = state.selfSa;
+      const center = state.selfCenter;
+      if (!name || !center) return;
+      copyText(lineFor(countDateKey(), center, name), el.copyToday);
+    });
+
+    renderCount();
+    pullStaff();
+    if (staffReadEnabled()) {
+      staffTimer = setInterval(pullStaff, STAFF_POLL_MS);
+    }
+  </script>
+</body>
+</html>
