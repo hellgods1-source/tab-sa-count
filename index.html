@@ -257,7 +257,7 @@
     .tap-btn:disabled { opacity: 0.45; cursor: not-allowed; }
     .actions {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 1fr;
       gap: 8px;
       margin-bottom: 8px;
     }
@@ -296,6 +296,9 @@
       font-family: Consolas, "Courier New", "Malgun Gothic", monospace;
       font-size: 0.82rem;
       word-break: break-all;
+      white-space: pre-wrap;
+      max-height: 8.5rem;
+      overflow: auto;
     }
     .flash { outline: 2px solid var(--accent); }
     footer {
@@ -351,17 +354,22 @@
           <button type="button" class="btn ghost" id="changeSelf">본인 변경</button>
         </div>
         <div class="tap-pad" id="tapPad"></div>
+        <div class="ar-chip-filter-group" id="copyChipGroup">
+          <div class="ar-chip-filter-wrap">
+            <div class="ar-chip-filter-row-label">복사</div>
+            <div class="ar-chip-filter-icons" id="copyChips"></div>
+          </div>
+        </div>
         <div class="actions">
-          <button type="button" id="copyToday">오늘 숫자 복사</button>
           <button type="button" class="ghost" id="undoTap">직전 탭 취소</button>
         </div>
         <p class="copy-preview" id="copyPreview"></p>
-        <p class="hint" id="countStoreHint">숫자는 이 폰에 저장됩니다. 퇴근 전 「오늘 숫자 복사」를 눌러 Teams에 붙여 넣으세요. 차량번호는 넣지 않습니다.</p>
+        <p class="hint" id="countStoreHint">숫자는 이 폰에 저장됩니다. 매일 못 보내면 이번주·이번달·전체를 눌러 Teams에 붙여 넣으세요. 차량번호는 넣지 않습니다.</p>
       </div>
     </section>
 
     <footer>
-      SA는 이 화면에서 카운트만 합니다. 퇴근 전 오늘 숫자 복사를 Teams에 붙여 넣습니다. 차량번호는 넣지 않습니다.
+      SA는 이 화면에서 카운트만 합니다. 오늘·이번주·이번달·전체를 복사해 Teams에 붙여 넣습니다. 차량번호는 넣지 않습니다.
     </footer>
   </div>
   <script>
@@ -395,8 +403,15 @@
       accept: '<svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12.5 10 17.5 19 7"/></svg>',
       decline: '<svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M7 7 17 17M17 7 7 17"/></svg>',
       callback: '<svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M8 4.5 5 8l3 3.5"/><path d="M5 8h8a6 6 0 1 1-1.2 11.9"/></svg>',
-      missed: '<svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M7 7c2.8 2.8 7.2 2.8 10 0"/><path d="M9.2 17.2 7 19.5M14.8 17.2 17 19.5"/><circle cx="12" cy="12" r="2.2"/></svg>'
+      missed: '<svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M7 7c2.8 2.8 7.2 2.8 10 0"/><path d="M9.2 17.2 7 19.5M14.8 17.2 17 19.5"/><circle cx="12" cy="12" r="2.2"/></svg>',
+      copy: '<svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="8" y="8" width="11" height="13" rx="1.5"/><path d="M6 16H5a1.5 1.5 0 0 1-1.5-1.5v-11A1.5 1.5 0 0 1 5 2h9A1.5 1.5 0 0 1 15.5 3.5V5"/></svg>'
     };
+    const COPY_RANGES = [
+      { id: "today", label: "오늘" },
+      { id: "week", label: "이번주" },
+      { id: "month", label: "이번달" },
+      { id: "all", label: "전체" }
+    ];
 
     function emptyCounts() {
       return { accept: 0, decline: 0, callback: 0, missed: 0 };
@@ -418,6 +433,12 @@
     function padMd(key) {
       const d = parseKey(key);
       return String(d.getMonth() + 1).padStart(2, "0") + "/" + String(d.getDate()).padStart(2, "0");
+    }
+
+    function mondayOf(d) {
+      const x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+      x.setDate(x.getDate() - ((x.getDay() + 6) % 7));
+      return x;
     }
 
     function contactOf(c) {
@@ -608,9 +629,39 @@
 
     function lineFor(dateKey, center, name) {
       const c = saCounts(dateKey, center, name);
-      return padMd(dateKey) + " " + center + " " + name +
+      return dateKey + " " + center + " " + name +
         " 컨택 " + contactOf(c) + " · 안내 " + guideOf(c) +
         " (수락" + c.accept + " 거절" + c.decline + " 재연락" + c.callback + " 부재중" + c.missed + ")";
+    }
+
+    function keysForCopyRange(range) {
+      const today = parseKey(countDateKey());
+      if (range === "today") return [countDateKey()];
+      if (range === "week") {
+        const mon = mondayOf(today);
+        const keys = [];
+        for (let i = 0; i < 7; i++) {
+          keys.push(todayKey(new Date(mon.getFullYear(), mon.getMonth(), mon.getDate() + i)));
+        }
+        return keys;
+      }
+      if (range === "month") {
+        const y = today.getFullYear();
+        const m = today.getMonth();
+        const last = new Date(y, m + 1, 0).getDate();
+        const keys = [];
+        for (let d = 1; d <= last; d++) keys.push(todayKey(new Date(y, m, d)));
+        return keys;
+      }
+      return Object.keys(state.records || {}).sort();
+    }
+
+    function linesForCopyRange(range, center, name) {
+      return keysForCopyRange(range).filter(function (dateKey) {
+        return contactOf(saCounts(dateKey, center, name)) > 0;
+      }).map(function (dateKey) {
+        return lineFor(dateKey, center, name);
+      });
     }
 
     function sheetWriteEnabled() {
@@ -697,6 +748,13 @@
     function copyText(text, btn) {
       function ok() {
         if (!btn) return;
+        const lbl = btn.querySelector(".ar-sa-count-lbl");
+        if (lbl) {
+          const prev = lbl.textContent;
+          lbl.textContent = "복사됨";
+          setTimeout(function () { lbl.textContent = prev; }, 1200);
+          return;
+        }
         const prev = btn.textContent;
         btn.textContent = "복사됨";
         setTimeout(function () { btn.textContent = prev; }, 1200);
@@ -728,7 +786,7 @@
       lastTapTime: document.getElementById("lastTapTime"),
       changeSelf: document.getElementById("changeSelf"),
       tapPad: document.getElementById("tapPad"),
-      copyToday: document.getElementById("copyToday"),
+      copyChips: document.getElementById("copyChips"),
       undoTap: document.getElementById("undoTap"),
       copyPreview: document.getElementById("copyPreview"),
       countStoreHint: document.getElementById("countStoreHint")
@@ -796,7 +854,9 @@
       const c = name && center ? saCounts(dateKey, center, name) : emptyCounts();
       el.kpiContact.textContent = contactOf(c);
       el.kpiGuide.textContent = guideOf(c);
-      el.copyPreview.textContent = name && center ? lineFor(dateKey, center, name) : "";
+      if (name && center && !el.copyPreview.dataset.locked) {
+        el.copyPreview.textContent = lineFor(dateKey, center, name);
+      }
       let lastAt = 0;
       let lastField = "";
       if (name && center) {
@@ -838,6 +898,7 @@
       renderSaChips();
       if (!gated) {
         renderTapPad();
+        renderCopyChips();
         renderCountKpi();
       }
     }
@@ -911,6 +972,7 @@
       state.lastTap = { dateKey: dateKey, center: center, name: name, field: field, at: at };
       saveState();
       sheetWrite("inc", dateKey, center, name, field);
+      el.copyPreview.dataset.locked = "";
       renderCount();
     });
 
@@ -926,11 +988,30 @@
       renderCount();
     });
 
-    el.copyToday.addEventListener("click", function () {
+    function renderCopyChips() {
+      el.copyChips.innerHTML = COPY_RANGES.map(function (r) {
+        return '<button type="button" class="ar-sa-count-chip" data-copy="' + r.id + '" data-icon-size="14">' +
+          ICONS.copy +
+          '<span class="ar-sa-count-lbl">' + r.label + "</span></button>";
+      }).join("");
+    }
+
+    el.copyChips.addEventListener("click", function (e) {
+      const btn = e.target.closest("[data-copy]");
+      if (!btn) return;
       const name = state.selfSa;
       const center = state.selfCenter;
       if (!name || !center) return;
-      copyText(lineFor(countDateKey(), center, name), el.copyToday);
+      const lines = linesForCopyRange(btn.getAttribute("data-copy"), center, name);
+      if (!lines.length) {
+        el.copyPreview.textContent = "이 기간 기록 없음";
+        el.copyPreview.dataset.locked = "1";
+        return;
+      }
+      const text = lines.join("\n");
+      el.copyPreview.textContent = text;
+      el.copyPreview.dataset.locked = "1";
+      copyText(text, btn);
     });
 
     renderCount();
