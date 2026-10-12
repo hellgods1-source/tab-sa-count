@@ -8,7 +8,7 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <meta name="theme-color" content="#f3f8f5">
-  <meta name="description" content="IB FOH SA TAB 입고 안내 일일 카운트. 센터와 본인 이름을 고른 뒤 TAB·유지(IB)·재연락·부재중만 탭합니다.">
+  <meta name="description" content="IB FOH SA TAB 입고 안내 일일 카운트. 센터와 본인 이름을 고른 뒤 TAB·유지(IB)·보류·부재중만 탭합니다.">
   <title>TAB 안내 카운트</title>
   <style>
     :root {
@@ -377,12 +377,12 @@
     <div class="share-banner">스크립트가 꺼져 있습니다. 파일을 다운로드한 뒤 Chrome 또는 Edge에서 직접 여세요. OneDrive·Teams 미리보기에서는 카운트가 되지 않습니다.</div>
   </noscript>
   <div class="app">
-    <div class="share-banner" id="shareBanner">OneDrive·Teams 미리보기에서는 동작하지 않습니다. Teams에는 이 링크를 보내세요. https://hellgods1-source.github.io/tab-sa-count/?v=20261014</div>
+    <div class="share-banner" id="shareBanner">OneDrive·Teams 미리보기에서는 동작하지 않습니다. Teams에는 이 링크를 보내세요. https://hellgods1-source.github.io/tab-sa-count/?v=20261015</div>
     <header>
       <div>
         <p class="kicker">IB · FOH SA · 카운트 전용</p>
         <h1>TAB 안내 카운트</h1>
-        <p class="live-url"><a id="liveLink" href="https://hellgods1-source.github.io/tab-sa-count/?v=20261014">링크 열기</a></p>
+        <p class="live-url"><a id="liveLink" href="https://hellgods1-source.github.io/tab-sa-count/?v=20261015">링크 열기</a></p>
       </div>
       <div class="ver">
         <div id="appVer"></div>
@@ -441,8 +441,8 @@
     </footer>
   </div>
   <script>
-    const APP_VERSION = "2026.10.14";
-    const LIVE_URL = "https://hellgods1-source.github.io/tab-sa-count/?v=20261014";
+    const APP_VERSION = "2026.10.15";
+    const LIVE_URL = "https://hellgods1-source.github.io/tab-sa-count/?v=20261015";
     const TEAMS_TAG = "TAB안내";
     const CONFIG = {
       SCRIPT_URL: "",
@@ -523,7 +523,7 @@
     const OUTCOMES = [
       { id: "accept", label: "TAB" },
       { id: "decline", label: "유지(IB)" },
-      { id: "callback", label: "재연락" },
+      { id: "callback", label: "보류" },
       { id: "missed", label: "부재중" }
     ];
     const ICONS = {
@@ -816,7 +816,7 @@
       const c = saCounts(dateKey, center, name);
       return TEAMS_TAG + " " + dateKey + " " + center + " " + name +
         " 컨택 " + contactOf(c) + " 안내 " + guideOf(c) +
-        " TAB " + c.accept + " 유지(IB) " + c.decline + " 재연락 " + c.callback + " 부재중 " + c.missed;
+        " TAB " + c.accept + " 유지(IB) " + c.decline + " 보류 " + c.callback + " 부재중 " + c.missed;
     }
 
     function copyRangeLabel(range) {
@@ -837,7 +837,7 @@
         TEAMS_TAG + " 카운트",
         LIVE_URL,
         "링크를 열면 바로 카운트됩니다. HTML 파일은 첨부하지 마세요.",
-        "센터와 본인 이름을 고른 뒤 TAB 유지(IB) 재연락 부재중만 탭합니다.",
+        "센터와 본인 이름을 고른 뒤 TAB 유지(IB) 보류 부재중만 탭합니다.",
         "명단 " + names.join(" "),
         "복사는 오늘 이번주 이번달 전체 버튼을 눌러 Teams에 붙여 넣습니다.",
         "팀즈 검색 " + TEAMS_TAG + " 또는 이름",
