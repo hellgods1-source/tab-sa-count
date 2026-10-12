@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- saved from url=(0016)http://localhost -->
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
@@ -7,7 +8,7 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <meta name="theme-color" content="#f3f8f5">
-  <meta name="description" content="IB FOH SA TAB 입고 안내 일일 카운트. 센터와 본인 이름을 고른 뒤 수락·거절·재연락·부재중만 탭합니다.">
+  <meta name="description" content="IB FOH SA TAB 입고 안내 일일 카운트. 센터와 본인 이름을 고른 뒤 TAB·유지(IB)·재연락·부재중만 탭합니다.">
   <title>TAB 안내 카운트</title>
   <style>
     :root {
@@ -32,6 +33,13 @@
       min-height: 100dvh;
       padding: 12px 12px calc(16px + env(safe-area-inset-bottom));
     }
+    body.count-only {
+      padding-top: 8px;
+    }
+    body.count-only header,
+    body.count-only footer {
+      display: none;
+    }
     .app { max-width: 42rem; margin: 0 auto; }
     header {
       display: flex;
@@ -55,11 +63,26 @@
       letter-spacing: -0.02em;
       color: var(--accent);
     }
+    .live-url {
+      margin: 4px 0 0;
+      font-size: 0.72rem;
+    }
+    .live-url a { color: var(--accent); }
     .ver {
       flex: 0 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 6px;
       font-size: 0.72rem;
       color: var(--muted);
       padding-top: 2px;
+    }
+    .ver .btn {
+      height: 1.85rem;
+      padding: 0 10px;
+      font-size: 0.72rem;
+      letter-spacing: 0;
     }
     .kpi {
       display: grid;
@@ -187,8 +210,7 @@
       font-size: 0.88rem;
       color: var(--ink);
     }
-    .name-gate:not(.gate-open) h2,
-    .name-gate:not(.gate-open) .gate-lead { display: none; }
+    .name-gate:not(.gate-open) { display: none; }
     .ar-chip-filter-group.gate-open .ar-sa-count-chip { height: 3.6rem; }
     .ar-chip-filter-group.gate-open .ar-sa-count-chip .ui-icon {
       width: 18px;
@@ -198,31 +220,30 @@
       font-size: 0.78rem;
     }
     .self-banner {
-      margin: 0 0 10px;
-      padding: 8px 12px;
-      background: var(--card);
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
+      margin: 0;
+      padding: 4px 0;
+      background: transparent;
+      border: 0;
       font-weight: 700;
       color: var(--accent);
     }
     .tap-pad {
       display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 0.5rem;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.65rem;
       margin-bottom: 10px;
-      padding: 0.85rem;
+      padding: 0.55rem;
       background: var(--grad-bg);
       border-radius: 1.25rem;
     }
     .tap-btn {
       position: relative;
-      height: 4.75rem;
+      height: 7.5rem;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 0.2rem;
+      gap: 0.35rem;
       border: 0;
       border-radius: 1.15rem;
       background: var(--grad);
@@ -233,26 +254,49 @@
       min-width: 0;
     }
     .tap-btn .ui-icon {
-      width: 22px;
-      height: 22px;
+      width: 28px;
+      height: 28px;
       stroke: #fff;
       color: #fff;
     }
     .tap-btn .tap-lbl {
-      font-size: 0.78rem;
+      font-size: 1.05rem;
       font-weight: 700;
       letter-spacing: 0;
       color: #fff;
+      text-align: center;
+      white-space: normal;
+      padding: 0 0.35rem;
+      line-height: 1.2;
     }
     .tap-btn .tap-n {
       position: absolute;
-      top: 0.32rem;
-      right: 0.4rem;
-      font-size: 0.68rem;
+      top: 0.5rem;
+      right: 0.55rem;
+      font-size: 1rem;
       font-weight: 700;
       line-height: 1;
       color: #fff;
     }
+    .copy-fold {
+      margin-top: 4px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--card);
+      overflow: hidden;
+    }
+    .copy-fold > summary {
+      list-style: none;
+      cursor: pointer;
+      padding: 10px 12px;
+      font-weight: 700;
+      font-size: 0.88rem;
+      color: var(--accent);
+      touch-action: manipulation;
+    }
+    .copy-fold > summary::-webkit-details-marker { display: none; }
+    .copy-fold[open] > summary { border-bottom: 1px solid var(--line); }
+    .copy-fold-body { padding: 10px; }
     .tap-btn:active { filter: brightness(0.94); }
     .tap-btn:disabled { opacity: 0.45; cursor: not-allowed; }
     .actions {
@@ -315,16 +359,35 @@
       text-align: center;
     }
     .hidden { display: none; }
+    .share-banner {
+      margin: 0 0 12px;
+      padding: 10px 12px;
+      background: #fff6e8;
+      border: 1px solid #e6c48a;
+      border-radius: var(--radius);
+      font-size: 0.82rem;
+      color: #6a4b12;
+      line-height: 1.45;
+    }
+    noscript .share-banner { margin: 12px; }
   </style>
 </head>
 <body>
+  <noscript>
+    <div class="share-banner">스크립트가 꺼져 있습니다. 파일을 다운로드한 뒤 Chrome 또는 Edge에서 직접 여세요. OneDrive·Teams 미리보기에서는 카운트가 되지 않습니다.</div>
+  </noscript>
   <div class="app">
+    <div class="share-banner" id="shareBanner">OneDrive·Teams 미리보기에서는 동작하지 않습니다. Teams에는 이 링크를 보내세요. https://hellgods1-source.github.io/tab-sa-count/?v=20261013</div>
     <header>
       <div>
         <p class="kicker">IB · FOH SA · 카운트 전용</p>
         <h1>TAB 안내 카운트</h1>
+        <p class="live-url"><a id="liveLink" href="https://hellgods1-source.github.io/tab-sa-count/?v=20261013">링크 열기</a></p>
       </div>
-      <div class="ver" id="appVer"></div>
+      <div class="ver">
+        <div id="appVer"></div>
+        <button type="button" class="btn ghost" id="copyTeamsGuide">팀즈 안내</button>
+      </div>
     </header>
 
     <section id="countPanel">
@@ -343,42 +406,94 @@
         </div>
       </div>
       <div id="countWork" class="hidden">
-        <p class="self-banner" id="selfBanner"></p>
-        <div class="kpi">
-          <div><b id="kpiContact">0</b><span>컨택 총량 (4결과 합)</span></div>
-          <div><b id="kpiGuide">0</b><span>안내 개수 (부재중 제외)</span></div>
-        </div>
-        <p class="last-tap" id="lastTapTime">마지막 카운트 없음</p>
         <div class="self-row">
-          <p class="hint" id="saHint">본인만 카운트할 수 있습니다.</p>
+          <p class="self-banner" id="selfBanner"></p>
           <button type="button" class="btn ghost" id="changeSelf">본인 변경</button>
         </div>
         <div class="tap-pad" id="tapPad"></div>
-        <div class="ar-chip-filter-group" id="copyChipGroup">
-          <div class="ar-chip-filter-wrap">
-            <div class="ar-chip-filter-row-label">복사</div>
-            <div class="ar-chip-filter-icons" id="copyChips"></div>
-          </div>
-        </div>
         <div class="actions">
           <button type="button" class="ghost" id="undoTap">직전 탭 취소</button>
         </div>
-        <p class="copy-preview" id="copyPreview"></p>
-        <p class="hint" id="countStoreHint">숫자는 이 폰에 저장됩니다. 매일 못 보내면 이번주·이번달·전체를 눌러 Teams에 붙여 넣으세요. 차량번호는 넣지 않습니다.</p>
+        <details class="copy-fold" id="copyFold">
+          <summary>복사</summary>
+          <div class="copy-fold-body">
+            <div class="kpi">
+              <div><b id="kpiContact">0</b><span>컨택 총량 (4결과 합)</span></div>
+              <div><b id="kpiGuide">0</b><span>안내 개수 (부재중 제외)</span></div>
+            </div>
+            <p class="last-tap" id="lastTapTime">마지막 카운트 없음</p>
+            <p class="hint" id="saHint">본인만 카운트할 수 있습니다.</p>
+            <div class="ar-chip-filter-group" id="copyChipGroup">
+              <div class="ar-chip-filter-wrap">
+                <div class="ar-chip-filter-row-label">복사</div>
+                <div class="ar-chip-filter-icons" id="copyChips"></div>
+              </div>
+            </div>
+            <p class="copy-preview" id="copyPreview"></p>
+            <p class="hint" id="countStoreHint">숫자는 이 폰에 저장됩니다. 복사한 뒤 Teams에 붙여 넣으면 TAB안내 또는 이름으로 찾습니다. 차량번호는 넣지 않습니다.</p>
+          </div>
+        </details>
       </div>
     </section>
 
     <footer>
-      SA는 이 화면에서 카운트만 합니다. 오늘·이번주·이번달·전체를 복사해 Teams에 붙여 넣습니다. 차량번호는 넣지 않습니다.
+      SA는 이 화면에서 카운트만 합니다. 오늘·이번주·이번달·전체를 복사해 Teams에 붙여 넣으면 TAB안내 또는 이름으로 검색됩니다. 차량번호는 넣지 않습니다.
     </footer>
   </div>
   <script>
-    const APP_VERSION = "2026.10.08";
+    const APP_VERSION = "2026.10.13";
+    const LIVE_URL = "https://hellgods1-source.github.io/tab-sa-count/?v=20261013";
+    const TEAMS_TAG = "TAB안내";
     const CONFIG = {
       SCRIPT_URL: "",
       STAFF_CSV_URL: ""
     };
     const STORAGE_KEY = "dongtan_tab_sa_count_v2";
+    const UNDO_MAX = 10;
+    const memoryStore = {};
+    let storageOk = false;
+
+    function probeStorage() {
+      try {
+        const k = STORAGE_KEY + "_probe";
+        localStorage.setItem(k, "1");
+        localStorage.removeItem(k);
+        storageOk = true;
+      } catch (e) {
+        storageOk = false;
+      }
+    }
+
+    function storeGet(key) {
+      if (storageOk) {
+        try { return localStorage.getItem(key); } catch (e) { storageOk = false; }
+      }
+      return Object.prototype.hasOwnProperty.call(memoryStore, key) ? memoryStore[key] : null;
+    }
+
+    function storeSet(key, val) {
+      if (storageOk) {
+        try { localStorage.setItem(key, val); return; } catch (e) { storageOk = false; }
+      }
+      memoryStore[key] = val;
+    }
+
+    function isPreviewFrame() {
+      try { return window.self !== window.top; } catch (e) { return true; }
+    }
+
+    function updateShareBanner() {
+      const bar = document.getElementById("shareBanner");
+      if (!bar) return;
+      if (storageOk && !isPreviewFrame()) {
+        bar.classList.add("hidden");
+        return;
+      }
+      bar.classList.remove("hidden");
+      if (!storageOk) {
+        bar.textContent = "이 창에서는 저장이 막혀 있습니다. 센터·이름은 눌러도 되지만 새로고침하면 숫자가 사라집니다. 파일을 다운로드한 뒤 Chrome 또는 Edge에서 여세요.";
+      }
+    }
     const STAFF_POLL_MS = 15000;
     const DEFAULT_CENTERS = ["용인", "동탄"];
     const DEFAULT_STAFF = [
@@ -392,8 +507,8 @@
       { center: "동탄", name: "변제철", active: 1 }
     ];
     const OUTCOMES = [
-      { id: "accept", label: "수락" },
-      { id: "decline", label: "거절" },
+      { id: "accept", label: "TAB" },
+      { id: "decline", label: "유지(IB)" },
       { id: "callback", label: "재연락" },
       { id: "missed", label: "부재중" }
     ];
@@ -465,6 +580,7 @@
       next.selfLocked = !!(next.selfSa && next.selfCenter);
       next.lastTap = s.lastTap || null;
       if (next.lastTap && !next.lastTap.center) next.lastTap.center = "동탄";
+      next.tapHistory = next.lastTap ? [next.lastTap] : [];
       const rec = s.records || {};
       Object.keys(rec).forEach(function (dateKey) {
         const day = rec[dateKey] || {};
@@ -488,16 +604,65 @@
         selfCenter: "",
         selfLocked: false,
         lastTap: null,
+        tapHistory: [],
         records: {},
         roster: defaultRoster()
       };
     }
 
+    function normalizeTapHistory(s) {
+      let hist = Array.isArray(s.tapHistory) ? s.tapHistory.slice() : [];
+      if (!hist.length && s.lastTap) hist = [s.lastTap];
+      return hist.filter(function (t) {
+        return t && t.name && t.center && t.field && t.dateKey;
+      }).slice(-UNDO_MAX);
+    }
+
+    function lastHistoryStaff(hist, roster) {
+      for (let i = (hist || []).length - 1; i >= 0; i--) {
+        const t = hist[i];
+        if (t && isActiveStaff(t.center, t.name, roster)) return t;
+      }
+      return null;
+    }
+
+    function ownTapHistory(name, center) {
+      if (!Array.isArray(state.tapHistory)) state.tapHistory = [];
+      return state.tapHistory.filter(function (t) {
+        return t && t.name === name && t.center === center;
+      });
+    }
+
+    function pushTap(t) {
+      if (!Array.isArray(state.tapHistory)) state.tapHistory = [];
+      state.tapHistory.push(t);
+      if (state.tapHistory.length > UNDO_MAX) {
+        state.tapHistory = state.tapHistory.slice(-UNDO_MAX);
+      }
+      state.lastTap = t;
+    }
+
+    function popOwnTap(name, center) {
+      if (!Array.isArray(state.tapHistory)) state.tapHistory = [];
+      for (let i = state.tapHistory.length - 1; i >= 0; i--) {
+        const t = state.tapHistory[i];
+        if (t && t.name === name && t.center === center) {
+          state.tapHistory.splice(i, 1);
+          const own = ownTapHistory(name, center);
+          state.lastTap = own.length
+            ? own[own.length - 1]
+            : (state.tapHistory.length ? state.tapHistory[state.tapHistory.length - 1] : null);
+          return t;
+        }
+      }
+      return null;
+    }
+
     function loadState() {
       try {
-        const raw = localStorage.getItem(STORAGE_KEY);
+        const raw = storeGet(STORAGE_KEY);
         if (!raw) {
-          const v1 = localStorage.getItem("dongtan_tab_sa_count_v1");
+          const v1 = storeGet("dongtan_tab_sa_count_v1");
           if (v1) return migrateV1(JSON.parse(v1));
           return defaultState();
         }
@@ -506,10 +671,13 @@
         if (s.version === 1) return migrateV1(s);
         if (s.version !== 2) return defaultState();
         if (!s.roster || !s.roster.staff || rosterLooksStale(s.roster)) s.roster = defaultRoster();
+        s.tapHistory = normalizeTapHistory(s);
+        s.lastTap = s.tapHistory.length ? s.tapHistory[s.tapHistory.length - 1] : null;
         if (!isActiveStaff(s.selfCenter, s.selfSa, s.roster)) {
-          if (s.lastTap && isActiveStaff(s.lastTap.center, s.lastTap.name, s.roster)) {
-            s.selfCenter = s.lastTap.center;
-            s.selfSa = s.lastTap.name;
+          const recovered = lastHistoryStaff(s.tapHistory, s.roster);
+          if (recovered) {
+            s.selfCenter = recovered.center;
+            s.selfSa = recovered.name;
           } else {
             s.selfSa = "";
             s.selfCenter = "";
@@ -523,7 +691,10 @@
     }
 
     function saveState() {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      try {
+        storeSet(STORAGE_KEY, JSON.stringify(state));
+      } catch (e) {}
+      if (!storageOk) updateShareBanner();
     }
 
     function rosterLooksStale(roster) {
@@ -629,9 +800,35 @@
 
     function lineFor(dateKey, center, name) {
       const c = saCounts(dateKey, center, name);
-      return dateKey + " " + center + " " + name +
-        " 컨택 " + contactOf(c) + " · 안내 " + guideOf(c) +
-        " (수락" + c.accept + " 거절" + c.decline + " 재연락" + c.callback + " 부재중" + c.missed + ")";
+      return TEAMS_TAG + " " + dateKey + " " + center + " " + name +
+        " 컨택 " + contactOf(c) + " 안내 " + guideOf(c) +
+        " TAB " + c.accept + " 유지(IB) " + c.decline + " 재연락 " + c.callback + " 부재중 " + c.missed;
+    }
+
+    function copyRangeLabel(range) {
+      for (let i = 0; i < COPY_RANGES.length; i++) {
+        if (COPY_RANGES[i].id === range) return COPY_RANGES[i].label;
+      }
+      return range;
+    }
+
+    function teamsGuideText() {
+      const names = [];
+      rosterCenters().forEach(function (center) {
+        staffForCenter(center).forEach(function (s) {
+          names.push(center + " " + s.name);
+        });
+      });
+      return [
+        TEAMS_TAG + " 카운트",
+        LIVE_URL,
+        "링크를 열면 바로 카운트됩니다. HTML 파일은 첨부하지 마세요.",
+        "센터와 본인 이름을 고른 뒤 TAB 유지(IB) 재연락 부재중만 탭합니다.",
+        "명단 " + names.join(" "),
+        "복사는 오늘 이번주 이번달 전체 버튼을 눌러 Teams에 붙여 넣습니다.",
+        "팀즈 검색 " + TEAMS_TAG + " 또는 이름",
+        "차량번호는 넣지 않습니다."
+      ].join("\n");
     }
 
     function keysForCopyRange(range) {
@@ -657,11 +854,14 @@
     }
 
     function linesForCopyRange(range, center, name) {
-      return keysForCopyRange(range).filter(function (dateKey) {
+      const lines = keysForCopyRange(range).filter(function (dateKey) {
         return contactOf(saCounts(dateKey, center, name)) > 0;
       }).map(function (dateKey) {
         return lineFor(dateKey, center, name);
       });
+      if (!lines.length) return lines;
+      if (range === "today" && lines.length === 1) return lines;
+      return [TEAMS_TAG + " " + copyRangeLabel(range) + " " + center + " " + name].concat(lines);
     }
 
     function sheetWriteEnabled() {
@@ -761,12 +961,13 @@
       }
       if (navigator.clipboard && navigator.clipboard.writeText) {
         return navigator.clipboard.writeText(text).then(ok).catch(function () {
-          window.prompt("복사할 내용", text);
+          try { window.prompt("복사할 내용", text); } catch (e) {}
         });
       }
-      window.prompt("복사할 내용", text);
+      try { window.prompt("복사할 내용", text); } catch (e) {}
     }
 
+    probeStorage();
     let state = loadState();
     let staffTimer = null;
 
@@ -789,10 +990,12 @@
       copyChips: document.getElementById("copyChips"),
       undoTap: document.getElementById("undoTap"),
       copyPreview: document.getElementById("copyPreview"),
-      countStoreHint: document.getElementById("countStoreHint")
+      countStoreHint: document.getElementById("countStoreHint"),
+      copyTeamsGuide: document.getElementById("copyTeamsGuide"),
+      shareBanner: document.getElementById("shareBanner")
     };
 
-    el.appVer.textContent = APP_VERSION;
+    if (el.appVer) el.appVer.textContent = APP_VERSION;
 
     function countDateKey() { return todayKey(); }
 
@@ -857,16 +1060,16 @@
       if (name && center && !el.copyPreview.dataset.locked) {
         el.copyPreview.textContent = lineFor(dateKey, center, name);
       }
+      const own = name && center ? ownTapHistory(name, center) : [];
+      const lastOwn = own.length ? own[own.length - 1] : null;
       let lastAt = 0;
       let lastField = "";
-      if (name && center) {
-        if (state.lastTap && state.lastTap.name === name && state.lastTap.center === center) {
-          lastAt = state.lastTap.at || 0;
-          lastField = state.lastTap.field || "";
-        } else {
-          lastAt = saLastAt(dateKey, center, name);
-          lastField = saLastField(dateKey, center, name);
-        }
+      if (lastOwn) {
+        lastAt = lastOwn.at || 0;
+        lastField = lastOwn.field || "";
+      } else if (name && center) {
+        lastAt = saLastAt(dateKey, center, name);
+        lastField = saLastField(dateKey, center, name);
       }
       const lastLabel = outcomeLabel(lastField);
       if (lastAt && lastLabel) {
@@ -876,13 +1079,17 @@
       } else {
         el.lastTapTime.innerHTML = "마지막 카운트 없음";
       }
-      el.undoTap.disabled = !(state.lastTap && state.lastTap.name === name && state.lastTap.center === center);
+      el.undoTap.disabled = !own.length;
+      el.undoTap.textContent = own.length
+        ? "직전 탭 취소 (" + own.length + ")"
+        : "직전 탭 취소";
       el.saHint.textContent = "본인 " + name + " · " + center + " · 다른 사람 카운트 불가";
       el.selfBanner.textContent = "본인 " + name + " · " + center + " · 오늘 " + padMd(dateKey);
     }
 
     function renderCount() {
       const gated = !state.selfLocked;
+      document.body.classList.toggle("count-only", !gated);
       el.nameGate.classList.toggle("gate-open", gated);
       el.saChipGroup.classList.toggle("gate-open", gated);
       el.countWork.classList.toggle("hidden", gated);
@@ -944,11 +1151,15 @@
     });
 
     el.changeSelf.addEventListener("click", function () {
-      if (!window.confirm("본인을 다시 고를까요? 카운트는 본인 숫자만 올릴 수 있습니다.")) return;
+      let ok = false;
+      try { ok = window.confirm("본인을 다시 고를까요? 카운트는 본인 숫자만 올릴 수 있습니다."); }
+      catch (e) { ok = true; }
+      if (!ok) return;
       state.selfLocked = false;
       state.selfSa = "";
       state.selfCenter = "";
       state.lastTap = null;
+      state.tapHistory = [];
       saveState();
       renderCount();
     });
@@ -969,7 +1180,7 @@
       const c = saCounts(dateKey, center, name);
       c[field] += 1;
       setSaCounts(dateKey, center, name, c, at, field);
-      state.lastTap = { dateKey: dateKey, center: center, name: name, field: field, at: at };
+      pushTap({ dateKey: dateKey, center: center, name: name, field: field, at: at });
       saveState();
       sheetWrite("inc", dateKey, center, name, field);
       el.copyPreview.dataset.locked = "";
@@ -977,12 +1188,21 @@
     });
 
     el.undoTap.addEventListener("click", function () {
-      const t = state.lastTap;
-      if (!t || t.name !== state.selfSa || t.center !== state.selfCenter) return;
+      const name = state.selfSa;
+      const center = state.selfCenter;
+      const t = popOwnTap(name, center);
+      if (!t) return;
       const c = saCounts(t.dateKey, t.center, t.name);
       if (c[t.field] > 0) c[t.field] -= 1;
-      setSaCounts(t.dateKey, t.center, t.name, c, contactOf(c) ? t.at : null);
-      state.lastTap = null;
+      const prev = ownTapHistory(name, center);
+      const prevTap = prev.length ? prev[prev.length - 1] : null;
+      if (prevTap && prevTap.dateKey === t.dateKey) {
+        setSaCounts(t.dateKey, t.center, t.name, c, prevTap.at, prevTap.field);
+      } else if (contactOf(c)) {
+        setSaCounts(t.dateKey, t.center, t.name, c, t.at, t.field);
+      } else {
+        setSaCounts(t.dateKey, t.center, t.name, c, null);
+      }
       saveState();
       sheetWrite("undo", t.dateKey, t.center, t.name, t.field);
       renderCount();
@@ -995,6 +1215,10 @@
           '<span class="ar-sa-count-lbl">' + r.label + "</span></button>";
       }).join("");
     }
+
+    el.copyTeamsGuide.addEventListener("click", function () {
+      copyText(teamsGuideText(), el.copyTeamsGuide);
+    });
 
     el.copyChips.addEventListener("click", function (e) {
       const btn = e.target.closest("[data-copy]");
@@ -1014,10 +1238,15 @@
       copyText(text, btn);
     });
 
-    renderCount();
-    pullStaff();
-    if (staffReadEnabled()) {
-      staffTimer = setInterval(pullStaff, STAFF_POLL_MS);
+    try {
+      renderCount();
+      updateShareBanner();
+      pullStaff();
+      if (staffReadEnabled()) {
+        staffTimer = setInterval(pullStaff, STAFF_POLL_MS);
+      }
+    } catch (e) {
+      updateShareBanner();
     }
   </script>
 </body>
