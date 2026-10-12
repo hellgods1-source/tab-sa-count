@@ -377,12 +377,12 @@
     <div class="share-banner">스크립트가 꺼져 있습니다. 파일을 다운로드한 뒤 Chrome 또는 Edge에서 직접 여세요. OneDrive·Teams 미리보기에서는 카운트가 되지 않습니다.</div>
   </noscript>
   <div class="app">
-    <div class="share-banner" id="shareBanner">OneDrive·Teams 미리보기에서는 동작하지 않습니다. Teams에는 이 링크를 보내세요. https://hellgods1-source.github.io/tab-sa-count/?v=20261013</div>
+    <div class="share-banner" id="shareBanner">OneDrive·Teams 미리보기에서는 동작하지 않습니다. Teams에는 이 링크를 보내세요. https://hellgods1-source.github.io/tab-sa-count/?v=20261014</div>
     <header>
       <div>
         <p class="kicker">IB · FOH SA · 카운트 전용</p>
         <h1>TAB 안내 카운트</h1>
-        <p class="live-url"><a id="liveLink" href="https://hellgods1-source.github.io/tab-sa-count/?v=20261013">링크 열기</a></p>
+        <p class="live-url"><a id="liveLink" href="https://hellgods1-source.github.io/tab-sa-count/?v=20261014">링크 열기</a></p>
       </div>
       <div class="ver">
         <div id="appVer"></div>
@@ -441,8 +441,8 @@
     </footer>
   </div>
   <script>
-    const APP_VERSION = "2026.10.13";
-    const LIVE_URL = "https://hellgods1-source.github.io/tab-sa-count/?v=20261013";
+    const APP_VERSION = "2026.10.14";
+    const LIVE_URL = "https://hellgods1-source.github.io/tab-sa-count/?v=20261014";
     const TEAMS_TAG = "TAB안내";
     const CONFIG = {
       SCRIPT_URL: "",
@@ -480,6 +480,20 @@
 
     function isPreviewFrame() {
       try { return window.self !== window.top; } catch (e) { return true; }
+    }
+
+    function isLiveHost() {
+      const host = String(location.hostname || "").toLowerCase();
+      return host.indexOf("github.io") >= 0;
+    }
+
+    function startAtNameGate(s) {
+      if (!s || !isLiveHost()) return s;
+      s.selfSa = "";
+      s.selfCenter = "";
+      s.selfLocked = false;
+      s.lastTap = null;
+      return s;
     }
 
     function updateShareBanner() {
@@ -663,13 +677,13 @@
         const raw = storeGet(STORAGE_KEY);
         if (!raw) {
           const v1 = storeGet("dongtan_tab_sa_count_v1");
-          if (v1) return migrateV1(JSON.parse(v1));
-          return defaultState();
+          if (v1) return startAtNameGate(migrateV1(JSON.parse(v1)));
+          return startAtNameGate(defaultState());
         }
         const s = JSON.parse(raw);
-        if (!s || !s.records) return defaultState();
-        if (s.version === 1) return migrateV1(s);
-        if (s.version !== 2) return defaultState();
+        if (!s || !s.records) return startAtNameGate(defaultState());
+        if (s.version === 1) return startAtNameGate(migrateV1(s));
+        if (s.version !== 2) return startAtNameGate(defaultState());
         if (!s.roster || !s.roster.staff || rosterLooksStale(s.roster)) s.roster = defaultRoster();
         s.tapHistory = normalizeTapHistory(s);
         s.lastTap = s.tapHistory.length ? s.tapHistory[s.tapHistory.length - 1] : null;
@@ -684,9 +698,9 @@
           }
         }
         s.selfLocked = !!(s.selfSa && s.selfCenter);
-        return s;
+        return startAtNameGate(s);
       } catch (e) {
-        return defaultState();
+        return startAtNameGate(defaultState());
       }
     }
 
