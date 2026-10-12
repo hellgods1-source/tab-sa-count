@@ -377,12 +377,12 @@
     <div class="share-banner">스크립트가 꺼져 있습니다. 파일을 다운로드한 뒤 Chrome 또는 Edge에서 직접 여세요. OneDrive·Teams 미리보기에서는 카운트가 되지 않습니다.</div>
   </noscript>
   <div class="app">
-    <div class="share-banner" id="shareBanner">OneDrive·Teams 미리보기에서는 동작하지 않습니다. Teams에는 이 링크를 보내세요. https://hellgods1-source.github.io/tab-sa-count/?v=20261016</div>
+    <div class="share-banner" id="shareBanner">OneDrive·Teams 미리보기에서는 동작하지 않습니다. Teams에는 이 링크를 보내세요. https://hellgods1-source.github.io/tab-sa-count/?v=20261017</div>
     <header>
       <div>
         <p class="kicker">IB · FOH SA · 카운트 전용</p>
         <h1>TAB 안내 카운트</h1>
-        <p class="live-url"><a id="liveLink" href="https://hellgods1-source.github.io/tab-sa-count/?v=20261016">링크 열기</a></p>
+        <p class="live-url"><a id="liveLink" href="https://hellgods1-source.github.io/tab-sa-count/?v=20261017">링크 열기</a></p>
       </div>
       <div class="ver">
         <div id="appVer"></div>
@@ -414,7 +414,7 @@
         <div class="actions">
           <button type="button" class="ghost" id="undoTap">직전 탭 취소</button>
         </div>
-        <details class="copy-fold" id="copyFold">
+        <details class="copy-fold" id="copyFold" open>
           <summary>복사</summary>
           <div class="copy-fold-body">
             <div class="kpi">
@@ -441,8 +441,8 @@
     </footer>
   </div>
   <script>
-    const APP_VERSION = "2026.10.16";
-    const LIVE_URL = "https://hellgods1-source.github.io/tab-sa-count/?v=20261016";
+    const APP_VERSION = "2026.10.17";
+    const LIVE_URL = "https://hellgods1-source.github.io/tab-sa-count/?v=20261017";
     const TEAMS_TAG = "TAB안내";
     const CONFIG = {
       SCRIPT_URL: "",
@@ -1025,7 +1025,8 @@
       copyPreview: document.getElementById("copyPreview"),
       countStoreHint: document.getElementById("countStoreHint"),
       copyTeamsGuide: document.getElementById("copyTeamsGuide"),
-      shareBanner: document.getElementById("shareBanner")
+      shareBanner: document.getElementById("shareBanner"),
+      copyFold: document.getElementById("copyFold")
     };
 
     if (el.appVer) el.appVer.textContent = APP_VERSION;
@@ -1140,6 +1141,7 @@
         renderTapPad();
         renderCopyChips();
         renderCountKpi();
+        if (el.copyFold) el.copyFold.open = true;
       }
     }
 
